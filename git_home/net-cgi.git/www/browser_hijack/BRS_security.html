@@ -1,0 +1,178 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html>
+<head>
+<% orbi_flow_head() %>
+<% hijack_language() %>
+</head>
+
+<body>
+<% form_submit("apply", "BRS_wlan_security.html", "hijack_passwd") %>
+
+<script>
+function sel_opt(opt,num)
+{
+	var cf = document.forms[0];
+	if(opt==1)
+		cf.question1.value = num.toString();
+	if(opt==2)
+		cf.question2.value = num.toString();
+}
+function isValidChar_space(each_char)
+{
+	if( each_char < 32 || each_char > 127)
+		return false;
+}
+
+function checkpasswd(cf)
+{
+	if(cf.sysNewPasswd.value == "")
+	{
+		alert(bh_password_null);
+		return false;
+	}
+	if (cf.sysNewPasswd.value.length >= 33 || cf.sysConfirmPasswd.value.length >= 33)
+	{
+		alert(bh_max_pwd_len);
+		return false;
+	}
+	if(cf.sysNewPasswd.value != cf.sysConfirmPasswd.value)
+	{ 
+		alert(bh_pwd_no_match);
+		return false;	
+	}
+
+	cf.hidden_enable_recovery.value="1";
+	if( cf.question1.value == "0" || cf.question2.value == "0")
+	{
+		alert(bh_select_quest);
+		return false;
+	}
+	
+	if( cf.answer1.value == "" || cf.answer2.value == "" )
+	{
+		alert(bh_enter_answer);
+		return false;
+	}
+	if( cf.answer1.value.length > 64 || cf.answer2.value.length > 64 )/* to fix bug 26920 */
+	{
+		alert(bh_invalid_answer);
+		return false;
+	}
+	
+	for(i=0; i< cf.answer1.value.length; i++)/* to fix bug 26920 */
+	{
+		if( isValidChar_space(cf.answer1.value.charCodeAt(i))==false )
+		{
+			alert(bh_invalid_answer);
+			return false;
+		}
+	}
+	for(i=0; i< cf.answer2.value.length; i++)/* to fix bug 26920 */
+	{
+		if( isValidChar_space(cf.answer2.value.charCodeAt(i))==false )
+		{
+			alert(bh_invalid_answer);
+			return false;
+		}
+	}
+
+	return true;
+}
+
+</script>
+<input type="hidden" name="hidden_enable_recovery" value="1" />
+<input type="hidden" name="question1" value="0"/>
+<input type="hidden" name="question2" value="0"/>
+<input type="hidden" name="hid_save_time" value="5"/>
+<div id="container">
+	<div class="dialog-content">
+		<!-- Orbi Admin Account Settings-->
+		<div id="card-orbi-admin-account" class="install-card clearfix">
+			<img class="netgear-logo" src="images/netgear.png">
+
+			<div class="desc-title"><script>document.write(bh_admin_account);</script></div>
+			<div class="desc-text"><script>document.write(bh_account_msg);</script></div>
+
+			<div class="input-wrapper col-lg-6 col-md-6 col-sm-6 float-left">
+				<div class="input-title non-active-val disabled"><script>document.write(username);</script></div>
+				<input type="text" value="<% cfg_get("http_loginname") %>  " disabled="disabled"/>
+			</div>
+
+			<div class="input-wrapper col-lg-6 col-md-6 col-sm-6 input-wrapper-right">
+				<div class="input-title"><script>document.write(key_passphrase);</script></div>
+				<input type="password" autocomplete="off" size="20" name="sysNewPasswd" id="sys_new_passwd" onFocus="this.select();"/>
+			</div>
+
+			<div class="input-wrapper col-lg-6 col-md-6 col-sm-6 float-right">
+				<div class="input-title"><script>document.write(bh_passwd_repas);</script></div>
+				<input type="password" autocomplete="off" size="20" name="sysConfirmPasswd" id="sys_confirm_passwd" onFocus="this.select();"/>
+			</div>
+
+			<div class="input-wrapper col-lg-6 col-md-6 col-sm-6 float-left width-490">
+				<div class="input-title ddl-title"><script>document.write(bh_security_question_1);</script></div>
+				<div class="dropdown">
+					<input type="button" id="sec-question-one" data-target="#sec-question-one sec-question-one" class="dropdown-menu btn btn-default dropdown-toggle" data-toggle="dropdown" aria-controls="sec-question-one">
+						<span><script>document.write(bh_select_a_question);</script></span>
+						<img class="ddl-caret" src="images/caret.png">
+					</input>
+					<ul class="dropdown-menu sec-question-one" role="menu" aria-labelledby="sec-question-one">
+						<script>
+						document.write('<li role="presentation" onclick="sel_opt(1,0);"><a role="menuitem" tabindex="-1" href="#" class="waves-effect active">'+bh_select_a_question+'</a></li>');
+						document.write('<li role="presentation" onclick="sel_opt(1,1);"><a role="menuitem" tabindex="-1" href="#" class="waves-effect">'+bh_quest1_1+'</a></li>');
+						document.write('<li role="presentation" onclick="sel_opt(1,2);"><a role="menuitem" tabindex="-1" href="#" class="waves-effect">'+bh_quest1_2+'</a></li>');
+						document.write('<li role="presentation" onclick="sel_opt(1,3);"><a role="menuitem" tabindex="-1" href="#" class="waves-effect">'+bh_quest1_3+'</a></li>');
+						document.write('<li role="presentation" onclick="sel_opt(1,4);"><a role="menuitem" tabindex="-1" href="#" class="waves-effect">'+bh_quest1_4+'</a></li>');
+						document.write('<li role="presentation" onclick="sel_opt(1,5);"><a role="menuitem" tabindex="-1" href="#" class="waves-effect">'+bh_quest1_5+'</a></li>');
+						document.write('<li role="presentation" onclick="sel_opt(1,6);"><a role="menuitem" tabindex="-1" href="#" class="waves-effect">'+bh_quest1_6+'</a></li>');
+						document.write('<li role="presentation" onclick="sel_opt(1,7);"><a role="menuitem" tabindex="-1" href="#" class="waves-effect">'+bh_quest1_7+'</a></li>');
+						document.write('<li role="presentation" onclick="sel_opt(1,8);"><a role="menuitem" tabindex="-1" href="#" class="waves-effect">'+bh_quest1_8+'</a></li>');
+						document.write('<li role="presentation" onclick="sel_opt(1,9);"><a role="menuitem" tabindex="-1" href="#" class="waves-effect">'+bh_quest1_9+'</a></li>');
+						</script>
+					</ul>
+				</div>
+			</div>
+
+			<div class="input-wrapper col-lg-6 col-md-6 col-sm-6 float-left width-490">
+				<div class="input-title"><script>document.write(bh_answer);</script></div>
+				<input type="text" autocomplete="off" maxLength="64" size="30" name="answer1" id="answer1"  onFocus="this.select();"/>
+			</div>
+
+			<div class="input-wrapper col-lg-6 col-md-6 col-sm-6 float-left width-490 margin-top-10" >
+				<div class="input-title ddl-title" ><script>document.write(bh_security_question_2);</script></div>
+				<div class="dropdown">
+					<input type="button" data-target="#sec-question-two sec-question-two" class="dropdown-menu btn btn-default dropdown-toggle" data-toggle="dropdown" aria-controls="sec-question-two">
+						<span><script>document.write(bh_select_a_question);</script></span>
+						<img class="ddl-caret" src="images/caret.png">
+					</input>
+					<ul id="sec-question-two" class="dropdown-menu" role="menu" aria-labelledby="sec-question-two">
+						<script>
+						document.write('<li role="presentation" onclick="sel_opt(2,0);"><a role="menuitem" tabindex="-1" href="#" class="waves-effect active">'+bh_select_a_question+'</a></li>');
+						document.write('<li role="presentation" onclick="sel_opt(2,1);"><a role="menuitem" tabindex="-1" href="#" class="waves-effect">'+bh_quest2_1+'</a></li>');
+						document.write('<li role="presentation" onclick="sel_opt(2,2);"><a role="menuitem" tabindex="-1" href="#" class="waves-effect">'+bh_quest2_2+'</a></li>');
+						document.write('<li role="presentation" onclick="sel_opt(2,3);"><a role="menuitem" tabindex="-1" href="#" class="waves-effect">'+bh_quest2_3+'</a></li>');
+						document.write('<li role="presentation" onclick="sel_opt(2,4);"><a role="menuitem" tabindex="-1" href="#" class="waves-effect">'+bh_quest2_4+'</a></li>');
+						document.write('<li role="presentation" onclick="sel_opt(2,5);"><a role="menuitem" tabindex="-1" href="#" class="waves-effect">'+bh_quest2_5+'</a></li>');
+						document.write('<li role="presentation" onclick="sel_opt(2,6);"><a role="menuitem" tabindex="-1" href="#" class="waves-effect">'+bh_quest2_6+'</a></li>');
+						document.write('<li role="presentation" onclick="sel_opt(2,7);"><a role="menuitem" tabindex="-1" href="#" class="waves-effect">'+bh_quest2_7+'</a></li>');
+						document.write('<li role="presentation" onclick="sel_opt(2,8);"><a role="menuitem" tabindex="-1" href="#" class="waves-effect">'+bh_quest2_8+'</a></li>');
+						</script>
+					</ul>
+				</div>
+			</div>
+
+ 			<div class="input-wrapper col-lg-6 col-md-6 col-sm-6 float-left width-490">
+				<div class="input-title"><script>document.write(bh_answer);</script></div>
+				<input type="text" autocomplete="off" maxLength="64" size="30" name="answer2" id="answer2" onFocus="this.select();"/>
+			</div>
+
+			<button class="waves-effect waves-light btn button-nav margin-top-10" onclick="return checkpasswd(document.forms[0])">
+				<span><script>document.write(bh_orbi_next_mark);</script></span>
+			</button>
+		</div>
+	</div>
+</div>
+
+</form>
+</body>
+
+</html>

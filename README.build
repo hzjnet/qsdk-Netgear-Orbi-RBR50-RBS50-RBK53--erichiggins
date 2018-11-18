@@ -1,0 +1,27 @@
+===============================
+Orbi Build Instructions
+===============================
+
+Note:
+	* This package has been built successfully on Ubuntu 14.04.1 (Server) with gcc5.2 .
+	* Compiling this package on platforms other than Ubuntu 14.04.1 may have unexpected results.
+
+
+============
+ Build code
+============
+
+1. uncompress source code file orbi-DT-V2.2.1.210_gpl_src.tar.bz2.zip.
+
+	unzip orbi-DT-V2.2.1.210_gpl_src.tar.bz2.zip
+	tar -jxvf orbi-DT-V2.2.1.210_gpl_src.tar.bz2
+
+2. run following commands to build.
+
+	cd orbi-V2.2.1.210_gpl_src
+	cp config/defconfig-orbi .config
+	make V=99
+
+3. the final image is "bin/ipq806x/RBR50-V2.2.1.210.img and RBS50-V2.2.1.210.img".
+
+User may upgrade to this image using the Orbi GUI "Router Upgrade" page.

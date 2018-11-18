@@ -1,0 +1,9 @@
+/*Config file For Orbi Desktop MR2.1 Project*/
+
+#define INTERFACENUM 12
+#define HAVE_ETHERNET_BACKHAUL
+#define	HAVE_GUEST_NETWORK
+#define SUPPORT_CIRCLE
+#define	SHOW_PARENT_ROUTER
+#define HAVE_IGNORE_TABLE
+#define SUPPORT_TRENDMICRO

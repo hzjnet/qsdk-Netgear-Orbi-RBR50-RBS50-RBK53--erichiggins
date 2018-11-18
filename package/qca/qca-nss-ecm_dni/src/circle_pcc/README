@@ -1,0 +1,40 @@
+Notes from Orbi OEM:
+---------------------
+Orbi does not support the HW Accelerator, but support the SW Accelerator(“SFE”), you can use the CMD “sfe_dump” on Orbi Console to show the Current SFE Statistic.
+
+Q: Netgear are planning to add one feature, which need to sniff the 1st 20 packets of each sessions. With SFE support, the packets of established session can not be captured by tcpdump (or firewall) any more. So they would like to know is there any API and document about SFE can be used and shared.
+
+A: If you use ECM connection manager, this feature can be added by using the PCC (Parental COntrol Classifier). You need to write a registrant module like in the qca-nss-ecm/examples/ecm_pcc_test.c. In this registrant module, you need to count the packets and if the count reaches to 20, you will allow the connection to be accelerated.
+
+  
+Notes by Tiebing:
+-----------------
+circle_pcc.c is adapted from the original ecm_pcc_test.c which was emailed to me by Orbi's OEM Delta 
+
+Structure:
+SFE (Shortcut Forward Engine) is the software implementation of accelerator. 
+Then there is ECM (Enhanced Connection Manager) that tracks UDP/TCP sessions inside SFE.
+ECM has mutliple plugins/classifiers, and one of them is PCC.
+ECM and PCC code is lodated at:
+	~/orbi/Orbi-V1.4.0.34_gpl_src/build_dir/linux-ipq806x/qca-nss-ecm/ecm_classifier_pcc.c
+PCC itself allows an user-implemented plugin (called registant).
+For every packet in SFE/ECM, a function in PCC is called ecm_classifier_pcc_process(). This function would return values 
+that determine whether acceleration for a particular session is done. This function in turn can call a function registered
+by the "registant". 
+
+The current module always allow acceleration when no rule is matched. If a rule is matched, then the session is NOT accelerated. 
+
+Scripts
+---------
+1. Reload the module
+echo 1 > /sys/kernel/debug/circle_pcc/unregister; curl -o  /tmp/circle_pcc.ko 192.168.5.203/orbi/circle_pcc.ko; rmmod circle_pcc; insmod /tmp/circle_pcc.ko
+
+2. Add a rule to not accelerate this session
+#6 for TCP, 17 for UDP, src IP, src port, dest IP, dest port
+echo "6,192.168.1.2,60023,107.170.213.158,22" > /sys/kernel/debug/circle_pcc/rule
+
+3. Flush all existing rules
+echo "Flush" > /sys/kernel/debug/circle_pcc/rule
+
+
+

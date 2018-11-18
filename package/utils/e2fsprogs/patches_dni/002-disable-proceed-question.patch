@@ -1,0 +1,19 @@
+--- e2fsprogs-1.42.12/misc/util.c	2014-08-25 11:51:22.000000000 +0800
++++ e2fsprogs-1.42.12/misc/util.c.bak	2017-09-15 20:57:06.106571097 +0800
+@@ -98,13 +98,13 @@
+ 		       delay);
+ 		alarm(delay);
+ 	} else
+-		fputs(_("Proceed anyway? (y,n) "), stdout);
+-	buf[0] = 0;
++		/*fputs(_("Proceed anyway? (y,n) "), stdout)*/;
++	/*buf[0] = 0;
+ 	if (!fgets(buf, sizeof(buf), stdin) ||
+ 	    strchr(short_yes, buf[0]) == 0) {
+ 		putc('\n', stdout);
+ 		exit(1);
+-	}
++	}*/
+ 	signal(SIGALRM, SIG_IGN);
+ }
+ 

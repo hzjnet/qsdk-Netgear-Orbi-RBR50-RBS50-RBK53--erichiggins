@@ -1,0 +1,17 @@
+diff -Nur qca-ssdk_dni/src/init/ssdk_init.c qca-ssdk_dni_pro/src/init/ssdk_init.c
+--- qca-ssdk_dni/src/init/ssdk_init.c	2017-06-12 10:15:02.671660681 +0800
++++ qca-ssdk_dni_pro/src/init/ssdk_init.c	2017-06-12 18:52:36.198676651 +0800
+@@ -3213,11 +3213,13 @@
+ #endif
+ #endif
+ 
++#if 0
+ 		case NETDEV_CHANGEMTU:
+ 			if(dev->type == ARPHRD_ETHER) {
+ 				fal_frame_max_size_set(0, dev->mtu + 18);
+ 			}
+ 			break;
++#endif
+                 }
+ 	return NOTIFY_DONE;
+ }

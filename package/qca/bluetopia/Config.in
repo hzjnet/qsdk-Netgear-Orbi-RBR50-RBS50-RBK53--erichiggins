@@ -1,0 +1,14 @@
+# Bluetopia git configuration
+
+config BLUETOPIA_GIT_REPOSITORY
+	string "git repository name of Bluetopia"
+	default ""
+	help
+	  Specify the git repository name of Bluetopia, should be the
+	  foler name in git_home path.
+
+config BLUETOPIA_GIT_URL
+	string "URL of Bluetopia git repository in remote server"
+	default ""
+	help
+	  Should be the URL to indentify repository path in dniserver.

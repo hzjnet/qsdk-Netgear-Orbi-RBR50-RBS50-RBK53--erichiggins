@@ -1,0 +1,98 @@
+#!/bin/sh /etc/rc.common
+#
+#
+#Copyright (c) 2016 Qualcomm Technologies, Inc.
+# All Rights Reserved.
+# Confidential and Proprietary - Qualcomm Technologies, Inc.
+#
+
+START=15
+
+arm_platform=`uname -m | grep arm`
+
+MTD_ART_PART_NAME="art"
+
+orbi_bt_reset_gpio=48
+
+boot() {
+	BT_ON=`/bin/config get BT_state`
+	if [ "$BT_ON" != "1" ]; then
+		exit
+	fi
+	. /lib/functions.sh
+
+    emmc_flash=$(find_mmc_part 0:ART 2> /dev/null)
+
+    if [ -n "$emmc_flash" ]; then
+        art_partition=$emmc_flash
+    else
+        mtd_name=$(grep -i -w ${MTD_ART_PART_NAME} /proc/mtd | cut -f1 -d: 2> /dev/null)
+        nor_flash=$(find /sys/bus/spi/devices/*/mtd -name ${mtd_name} 2> /dev/null)
+
+        if [ -n "$nor_flash" -a -n "$arm_platform" ]; then
+            art_partition=/dev/${mtd_name}
+        elif [ -n "$mtd_name" ]; then
+            mtdblock_name="$(echo $mtd_name | sed 's/mtd/mtdblock/')"
+            art_partition=/dev/${mtdblock_name}
+        fi
+    fi
+
+    #
+    # Copy Bluetooth MAC address in "ARTMTD" partition to "ART" partition if
+    # they are different
+    #
+    bt_mac_artmtd="$(artmtd -r mac | sed -n '/bt /{s/^[^:]*: //; p}')"
+    bt_mac_art="$(hexdump $art_partition -n 6 -s 64 -e '/1 ":%x"' -v | sed 's/^://')"
+    if [ "$bt_mac_artmtd" != "$bt_mac_art" ]; then
+        bt_mac_art_hex="$(echo "${bt_mac_artmtd}" | sed 's/^/\\x/; s/:/\\x/g')"
+        echo -n -e "${bt_mac_art_hex}" > /tmp/bt_mac_art
+
+        dd if=$art_partition of=/tmp/art_before_bt_mac bs=64 count=1
+        dd if=$art_partition of=/tmp/art_after_bt_mac bs=70 skip=1
+        (
+            cat /tmp/art_before_bt_mac;
+            cat /tmp/bt_mac_art;
+            cat /tmp/art_after_bt_mac;
+        ) | dd of=$art_partition
+
+        rm /tmp/art_before_bt_mac /tmp/bt_mac_art /tmp/art_after_bt_mac
+    fi
+
+    export BTHOST_BD_ADDR=0x$(hexdump $art_partition -n 6 -s 64 | cut -d " " -f2-4 | sed 's/ //g'| head -n 1)
+    echo "$BTHOST_BD_ADDR" > /tmp/BTHOST_BD_ADDR
+    export BTHOST_XCAL_TRIM=0x$(hexdump $art_partition -n 7 -s 64 | cut -d " " -f5 | head -n 1)
+    echo "$BTHOST_XCAL_TRIM" > /tmp/BTHOST_XCAL_TRIM
+
+	# Enable bluetooth and WiFi-2.4G coexist
+	iwpriv wifi0 btcoex_enable 1
+    # Pull down and then pull up GPIO[48] to reset Bluetooth chip
+    cd /sys/class/gpio
+    echo ${orbi_bt_reset_gpio} > export
+    cd gpio${orbi_bt_reset_gpio}
+    echo out > direction
+    echo 0 > value
+    sleep 1
+    echo 1 > value
+}
+
+stop () {
+    # Pull down GPIO[48] to poweroff Bluetooth chip
+    cd /sys/class/gpio
+    echo ${orbi_bt_reset_gpio} > export
+    cd gpio${orbi_bt_reset_gpio}
+    echo out > direction
+    echo 0 > value
+	# Disaable bluetooth and WiFi-2.4G coexist
+	iwpriv wifi0 btcoex_enable 0
+}
+start () {
+	iwpriv wifi0 btcoex_enable 1
+    # Pull down and then pull up GPIO[48] to reset Bluetooth chip
+    cd /sys/class/gpio
+    echo ${orbi_bt_reset_gpio} > export
+    cd gpio${orbi_bt_reset_gpio}
+    echo out > direction
+    echo 0 > value
+    sleep 1
+    echo 1 > value
+}

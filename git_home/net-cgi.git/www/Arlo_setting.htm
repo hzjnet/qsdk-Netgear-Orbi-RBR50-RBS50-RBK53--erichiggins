@@ -1,0 +1,56 @@
+<% http_header("style/form.css", "/funcs.js") %>
+<% body_header("_arlo", "Arlo_setting.htm", "apply_arlo") %>
+<input type="hidden" name="hidden_enable_arlo">
+<div class="page_title" id="page_title">Arlo Setting</div>
+<div class="fix_button">
+<TABLE width=100% border=0 cellpadding=0 cellspacing=2>
+<TR>
+<script>
+var enable_arlo="<% cfg_get("wlg_arlo_endis_arloNet") %>";
+var master="<% cfg_get("http_loginname") %>";
+if( master == "admin" )
+	document.write('<TD nowrap colspan=2 align=center><input class="cancel_bt" type="button" name="Cancel" id="cancel" value="$cancel_mark" onClick="location.href=\'Arlo_setting.htm\';">&nbsp;&nbsp;<input class="apply_bt" type="button" name="Apply" id="apply" value="$apply_mark" onClick="return check_Arlo(document.forms[0])"></TD>');
+else
+	document.write(' <TD nowrap colspan=2 align=center><input class="cancel1_bt" type="button" name="Cancel" id="cancel" value="$cancel_mark" disabled>&nbsp;&nbsp;<input class="apply1_bt" type="button" name="Apply" id="apply" value="$apply_mark" disabled></TD>');
+</script>
+
+</TR>
+</TABLE>
+
+</div>
+<div id="main" class="main_top_button">
+<% table_header() %>
+
+<TR>
+	<TD nowrap>
+	<input type="checkbox" name="enable_arlo" id="enable_arlo"><b>Enable Arlo Support</b>
+	</TD>
+</TR>
+<TR>
+	<TD colspan="2"><p>You can set up your Orbi router as Arlo base station. To set up your Orbi router as an Arlo base station, select the <b>Enable Arlo Support</b> check box and use the Arlo app to set up your Orbi router. For more information, see the Orbi user manual.</p></TD>
+</TR>
+</TABLE>
+</div>
+</FORM>
+</BODY>
+<script>
+function loadvalue()
+{
+	cf = document.forms[0];
+	if(enable_arlo == "1")
+		cf.enable_arlo.checked = true;
+	else
+		cf.enable_arlo.checked = false;
+}
+
+function check_Arlo(cf)
+{
+	if(cf.enable_arlo.checked == true)
+		cf.hidden_enable_arlo.value = "1";
+	else
+		cf.hidden_enable_arlo.value = "0";
+	cf.submit();
+	return true;
+}
+</script>
+</HTML>

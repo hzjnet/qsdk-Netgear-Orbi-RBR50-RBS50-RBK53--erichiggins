@@ -1,0 +1,66 @@
+#!/bin/sh /etc/rc.common
+# Copyright (C) 2006 OpenWrt.org
+
+START=95
+boot() {
+	mount_root done
+	rm -f /sysupgrade.tgz
+
+	# process user commands
+	[ -f /etc/rc.local ] && {
+		sh /etc/rc.local
+	}
+
+	# set leds to normal state
+	. /etc/diag.sh
+	set_state done
+
+	# after DUT boot done, enable GRO
+	/usr/sbin/ethtool -K eth1 gro on
+	if [ "x$(/bin/config get factory_mode)" = "x1" ]; then
+		utelnetd_p=`pidof utelnetd`
+		if [ "x${utelnetd_p}" = "x" ]; then
+			/usr/sbin/utelnetd -d -i br0
+		fi
+	else
+		/sbin/ledcontrol -n power -c green -s on
+	fi
+
+	telnetenable_pid=`pidof telnetenable`
+	utelnetd_pid=`pidof utelnetd`
+	if [ "x${telnetenable_pid}" != "x" -a "x${utelnetd_pid}" = "x" ]; then
+		echo "restart the daemon telnetenable for Thin client !!!"
+		/bin/kill -9 $telnetenable_pid
+		/usr/sbin/telnetenable
+	fi
+
+	/sbin/cmdftp restart &
+
+	# Start ipmac binding
+	/sbin/ip_mac start
+	sleep 1
+	/etc/init.d/dnsmasq start &
+	sleep 1
+	/sbin/check_status.sh &
+
+	#tmply fixed pppd can not get ip after upgrade FW.
+        local ipv4_pppd=`ps | grep "pppd call dial-provider updetach" | grep -v "grep" |awk '{print $1}'`
+        local pppip=`ifconfig ppp0 |grep "inet addr" |cut -f2 -d: |cut -f1 -d' '`
+        if [ "x$ipv4_pppd" != "x" ] && [ "x$pppip" = "x" ]; then
+                /bin/kill -SIGHUP $ipv4_pppd
+                /bin/kill $ipv4_pppd; pppd call dial-provider updetach
+        fi
+
+	have_console=`ls -al /dev/console |grep crw`
+	[ "$have_console" = "" ] && rm /dev/console -rf && mknod /dev/console c 5 1
+	ageing_time=$(/bin/config get ageing_time)
+	/usr/sbin/brctl setageing br0 $ageing_time
+
+	##workaroud for memory leak
+	/sbin/drop_caches &
+
+	rm -f /tmp/boot_status
+
+	sysctl -w net.ipv4.neigh.default.gc_reap_limit=100
+	echo "[Orbi]***boot done***" > /dev/console
+}

@@ -1,0 +1,34 @@
+#!/bin/sh
+
+PPP_IFNAME="ppp0"
+WAN_IFNAME="brwan"
+LAN_IFNAME="br0"
+INTERVAL=300
+
+gw_detect()
+{
+	if [ "$(/bin/config get ap_mode)" = "1" ];then
+		ifname=$LAN_IFNAME
+	elif [ "$(/bin/config get wan_proto)" = "pppoe" -o "$(/bin/config get wan_proto)" = "pptp" ]; then
+		ifname=$PPP_IFNAME
+	else
+		ifname=$WAN_IFNAME
+	fi
+	ip=`route |grep $ifname | grep default |awk '{print $2}'`
+	ping -c 2 $ip > /tmp/ping_gw_result 2> /dev/null
+	sleep 5
+	result=`cat /tmp/ping_gw_result`
+
+	if [ "x$result" = "x" ];then
+		old_gwdiconnection=`/bin/config get gwDisconnDuration`
+		let old_gwdiconnection=old_gwdiconnection+5
+		/bin/config set gwDisconnDuration=$old_gwdiconnection
+		/bin/config commit
+	fi
+}
+
+while true
+do
+	gw_detect
+	sleep $INTERVAL
+done
